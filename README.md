@@ -30,7 +30,6 @@ The project uses a monorepo structure:
 - `packages/shared-types`: shared TypeScript interfaces
 - `docs`: architecture notes, progress log, and screenshots
 
-```md
 See the detailed architecture and database design here:
 
 - [Architecture Notes](docs/architecture.md)
