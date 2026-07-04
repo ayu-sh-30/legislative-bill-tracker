@@ -55,3 +55,24 @@ Interview notes:
 - Bill versions and stages are separate tables because a bill can have many text versions and many timeline events.
 - Follow is a join table because users and bills have a many-to-many relationship.
 - Raw scraped source data is preserved using JSON fields for auditability.
+
+### Checkpoint 4: Initial bill ingestion job
+
+Status: Complete
+
+Built:
+- Bill ingestion service that saves normalized bill data through Prisma
+- Idempotent upsert logic for bills, stages, and versions
+- Seed job with initial manually curated bill records
+- Database uniqueness rule for bill source identity
+- Local verification that the seed job runs successfully
+
+Why it matters:
+- The ingestion pipeline is separated from the data source.
+- Future Sansad and PRS fetchers can produce the same normalized input shape.
+- Running the job repeatedly should not create duplicate bill records.
+
+Interview notes:
+- I separated source parsing from database ingestion so scraper changes do not affect storage logic.
+- I used Prisma upsert with compound unique constraints to make the seed job idempotent.
+- I preserved raw source metadata in JSON fields for traceability.
