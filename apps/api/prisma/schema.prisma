@@ -1,8 +1,140 @@
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Bill {
+  id             String    @id @default(uuid())
+  title          String
+  shortTitle     String?
+  billNumber     String?
+  year           Int?
+  house          String?
+  ministry       String?
+  status         String?
+  introducedDate DateTime?
+  source         String
+  sourceUrl      String?
+  rawSourceData  Json?
+
+  versions     BillVersion[]
+  stages       BillStage[]
+  follows      Follow[]
+  mpActivities MpActivity[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([year])
+  @@index([status])
+  @@index([house])
+}
+
+model BillVersion {
+  id            String    @id @default(uuid())
+  billId        String
+  versionLabel  String
+  versionDate   DateTime?
+  pdfUrl        String?
+  textContent   String?
+  source        String
+  rawSourceData Json?
+
+  bill Bill @relation(fields: [billId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([billId, versionLabel])
+  @@index([billId])
+}
+
+model BillStage {
+  id          String    @id @default(uuid())
+  billId      String
+  stage       String
+  house       String?
+  stageDate   DateTime?
+  description String?
+  sourceUrl   String?
+
+  bill Bill @relation(fields: [billId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([billId, stage, stageDate])
+  @@index([billId])
+  @@index([stageDate])
+}
+
+model Mp {
+  id            String  @id @default(uuid())
+  name          String
+  house         String?
+  party         String?
+  state         String?
+  constituency  String?
+  source        String
+  rawSourceData Json?
+
+  mpActivities MpActivity[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
+  @@index([party])
+  @@index([state])
+}
+
+model MpActivity {
+  id            String    @id @default(uuid())
+  mpId          String
+  billId        String?
+  activityType  String
+  title         String
+  activityDate  DateTime?
+  sourceUrl     String?
+  rawSourceData Json?
+
+  mp   Mp    @relation(fields: [mpId], references: [id], onDelete: Cascade)
+  bill Bill? @relation(fields: [billId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([mpId])
+  @@index([billId])
+  @@index([activityType])
+}
+
+model User {
+  id           String  @id @default(uuid())
+  name         String?
+  email        String  @unique
+  passwordHash String
+
+  follows Follow[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Follow {
+  id     String @id @default(uuid())
+  userId String
+  billId String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bill Bill @relation(fields: [billId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, billId])
+  @@index([billId])
 }
