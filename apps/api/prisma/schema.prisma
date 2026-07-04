@@ -18,7 +18,7 @@ model Bill {
   status         String?
   introducedDate DateTime?
   source         String
-  sourceUrl      String?
+  sourceUrl      String
   rawSourceData  Json?
 
   versions     BillVersion[]
@@ -29,6 +29,7 @@ model Bill {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@unique([source, sourceUrl])
   @@index([year])
   @@index([status])
   @@index([house])
