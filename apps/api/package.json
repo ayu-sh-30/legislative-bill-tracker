@@ -11,6 +11,7 @@
     "start": "node dist/server.js",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "db:seed:bills": "ts-node-dev --transpile-only src/jobs/seed-bills.ts",
+    "db:seed:mps": "ts-node-dev --transpile-only src/jobs/seed-mps.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

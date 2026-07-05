@@ -4,7 +4,8 @@ import cors from 'cors';
 import { env } from './config/env';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware';
 import healthRoutes from './routes/health.routes';
- import billRoutes from './routes/bills.routes';
+import billRoutes from './routes/bills.routes';
+import mpRoutes from './routes/mp.routes';
 
 const app = express();
 
@@ -15,6 +16,7 @@ app.use(express.json());
 
 app.use(healthRoutes);
 app.use("/api/bills", billRoutes);
+app.use("/api/mps", mpRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
