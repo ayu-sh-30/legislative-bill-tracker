@@ -1,9 +1,3 @@
-// What sample bills should I send into the ingestion service?
-
-// service = knows how to save one bill
-// job = chooses which bills to save and runs the service
-
-
 import { prisma } from "../config/prisma";
 import { ingestBill, type NormalizedBillInput } from "../services/bill-ingestion.service";
 
