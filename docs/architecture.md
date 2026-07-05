@@ -158,6 +158,117 @@ Stores MP-related legislative activity.
 
 This is separate from `mps` because one MP can have many activity records, and some activity records may reference bills.
 
+## API Request Flow
+
+The backend uses a route-controller-service structure. Each layer has a specific responsibility, so HTTP handling, business logic, and database access stay separate.
+
+```mermaid
+flowchart TD
+    A["Client / Browser / curl"] --> B["Express app<br/>apps/api/src/server.ts"]
+
+    B --> C["Global middleware<br/>cors(), express.json()"]
+
+    C --> D["Route module<br/>apps/api/src/routes/*.routes.ts"]
+
+    D --> E["Controller<br/>apps/api/src/controllers/*.controller.ts"]
+
+    E --> F["Service<br/>apps/api/src/services/*.service.ts"]
+
+    F --> G["Prisma Client<br/>apps/api/src/config/prisma.ts"]
+
+    G --> H["PostgreSQL database"]
+
+    H --> G
+    G --> F
+    F --> E
+    E --> I["JSON response"]
+
+    D --> J["Not found middleware<br/>notFoundHandler"]
+    E --> K["Error middleware<br/>errorHandler"]
+    J --> K
+    K --> I
+```
+
+### What Happens At Each Stage
+
+1. The client sends an HTTP request, such as `GET /api/bills`.
+
+2. `server.ts` receives the request through the Express app.
+
+3. Global middleware runs first:
+   - `cors()` allows frontend/backend communication.
+   - `express.json()` parses JSON request bodies.
+
+4. Express matches the request to a route module.
+
+   Example:
+
+   ```ts
+   app.use("/api/bills", billRoutes);
+   ```
+
+   This forwards bill-related requests to `bills.routes.ts`.
+
+5. The route file maps the HTTP method and path to a controller.
+
+   Example:
+
+   ```ts
+   router.get("/", listBills);
+   router.get("/:id", getBillDetail);
+   router.get("/:id/timeline", getBillTimelineDetail);
+   ```
+
+6. The controller reads request inputs.
+
+   Examples:
+   - `req.params.id` for path parameters
+   - `req.query.year` for query filters
+   - `req.body` for JSON body data on POST/PUT routes
+
+7. The controller calls a service function.
+
+   Example:
+
+   ```ts
+   const bills = await getBills(filters);
+   ```
+
+8. The service uses Prisma to query or update PostgreSQL.
+
+   Example:
+
+   ```ts
+   prisma.bill.findMany()
+   ```
+
+9. Prisma sends the query to PostgreSQL and returns typed data back to the service.
+
+10. The controller sends a JSON response.
+
+    Example:
+
+    ```json
+    {
+      "data": []
+    }
+    ```
+
+11. If no route matches, `notFoundHandler` creates a 404 error.
+
+12. If any controller or service throws an error, `errorHandler` returns a consistent JSON error response.
+
+    Example:
+
+    ```json
+    {
+      "error": {
+        "message": "Bill not found",
+        "statusCode": 404
+      }
+    }
+    ```
+
 ## Backend Folder Responsibilities
 
 The API is organized by responsibility so routes, request handling, business logic, and database access do not all live in one file.
@@ -265,9 +376,9 @@ Responsibilities:
 
 Scripts that run outside normal HTTP request/response flow.
 
-Current file:
-- `seed-bills.ts`
-
+Current job files:
+- `seed-bills.ts`: seeds initial bill, stage, and version data
+- `seed-mps.ts`: seeds initial MP profile and activity data
 The seed job:
 - creates initial bill data for development
 - calls the bill ingestion service

@@ -103,3 +103,30 @@ Interview notes:
 - The list endpoint returns selected fields to keep responses lightweight.
 - The detail endpoint includes related versions and stages because the bill detail page needs full context.
 - The timeline endpoint returns only stage events ordered by date for timeline UI rendering.
+
+### Checkpoint 2: MP profile API endpoints
+
+Status: Complete
+
+Built:
+- MP service functions for list, detail, and activity queries
+- MP controller functions for request parsing and JSON responses
+- MP routes for `/api/mps`, `/api/mps/:id`, and `/api/mps/:id/activities`
+- Query filters for party, state, house, and name search
+- Manual MP seed job for local development data
+- Unique MP source identity for idempotent MP seeding
+
+Verified:
+- `GET /api/mps`
+- `GET /api/mps/:id`
+- `GET /api/mps/:id/activities`
+- `GET /api/mps?search=Rahul`
+- `GET /api/mps?party=Bharatiya%20Janata%20Party`
+- `GET /api/mps?state=Gujarat`
+- `GET /api/mps?house=Lok%20Sabha`
+
+Interview notes:
+- I reused the route-controller-service pattern from the bill APIs.
+- The MP list endpoint supports filters for browsing by party, state, house, and name.
+- The MP detail endpoint includes activity records because profile pages need both identity and legislative activity.
+- The seed job uses a compound source identity so MP records can be inserted or updated without duplication.
