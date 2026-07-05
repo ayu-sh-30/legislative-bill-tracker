@@ -130,3 +130,28 @@ Interview notes:
 - The MP list endpoint supports filters for browsing by party, state, house, and name.
 - The MP detail endpoint includes activity records because profile pages need both identity and legislative activity.
 - The seed job uses a compound source identity so MP records can be inserted or updated without duplication.
+
+### Checkpoint 3: JWT authentication
+
+Status: Complete
+
+Built:
+- Signup endpoint with Zod validation
+- Login endpoint with password verification
+- Password hashing with bcrypt
+- JWT issuing with user ID stored in `sub`
+- Auth middleware for protected routes
+- Protected `/api/auth/me` endpoint
+- Architecture documentation for authentication and authorization flow
+
+Verified:
+- `POST /api/auth/signup`
+- `POST /api/auth/login`
+- `GET /api/auth/me` with Bearer token
+- `GET /api/auth/me` without token returns `401`
+
+Interview notes:
+- I used bcrypt so plain passwords are never stored.
+- I used JWTs so clients can authenticate once and send a signed token on later requests.
+- The auth middleware verifies the token and attaches the authenticated user to `req.user`.
+- `/api/auth/me` checks the database so stale tokens do not return deleted user data.

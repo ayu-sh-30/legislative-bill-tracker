@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { AppError } from "../middleware/error.middleware";
 import { getMps, getMpActivities, getMpById } from "../services/mp.service";
-import { string } from "zod";
 
 type MpIdParams = {
     id : string;
