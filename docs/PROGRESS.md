@@ -76,3 +76,30 @@ Interview notes:
 - I separated source parsing from database ingestion so scraper changes do not affect storage logic.
 - I used Prisma upsert with compound unique constraints to make the seed job idempotent.
 - I preserved raw source metadata in JSON fields for traceability.
+
+## Day 2 - Backend API
+
+### Checkpoint 1: Public bill API endpoints
+
+Status: Complete
+
+Built:
+- Bill service functions for list, detail, and timeline queries
+- Bill controller functions for request parsing and JSON responses
+- Bill routes for `/api/bills`, `/api/bills/:id`, and `/api/bills/:id/timeline`
+- Query filters for status, house, year, and title search
+- Not-found handling for missing bill IDs
+
+Verified:
+- `GET /api/bills`
+- `GET /api/bills/:id`
+- `GET /api/bills/:id/timeline`
+- `GET /api/bills?year=2023`
+- `GET /api/bills?status=Passed`
+- `GET /api/bills?search=Sanhita`
+
+Interview notes:
+- I used a route-controller-service structure to separate URL mapping, HTTP handling, and database logic.
+- The list endpoint returns selected fields to keep responses lightweight.
+- The detail endpoint includes related versions and stages because the bill detail page needs full context.
+- The timeline endpoint returns only stage events ordered by date for timeline UI rendering.
