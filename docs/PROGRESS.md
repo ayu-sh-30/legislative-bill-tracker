@@ -336,3 +336,26 @@ Interview notes:
 - I preserved raw detail data in JSON after converting dates to strings.
 - I added defensive parsing because PRS pages include navigation and category links alongside bill links.
 - I kept the ingestion service unchanged, proving the normalized ingestion boundary works.
+
+### Checkpoint 3: PDF text extraction foundation
+
+Status: Complete
+
+Built:
+- PDF text extraction service for bill version PDFs
+- PDF extraction job for bill versions missing `textContent`
+- Fetch timeout and user-agent handling for PDF downloads
+- Whitespace normalization for extracted text
+- Storage of extracted text in `bill_versions.textContent`
+
+Verified:
+- `npm.cmd run build`
+- PDF extraction job runs locally
+- Bill versions with PDF URLs receive extracted text content
+- Extraction skips versions that already have text content
+
+Interview notes:
+- I separated PDF extraction into a service so it can be reused by jobs or future endpoints.
+- The extraction job only processes versions where `textContent` is empty, making it safe to rerun.
+- Extracted text is stored on `bill_versions` because diffing compares versions, not the bill metadata row.
+- I used the class-based `PDFParse` API and cleaned up parser resources after extraction.

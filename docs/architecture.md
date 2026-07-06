@@ -825,3 +825,27 @@ To avoid bad ingestion, the parser:
 - stores raw source metadata for debugging
 
 This makes the ingestion process safer while still allowing future parser improvements.
+
+## PDF Text Extraction Flow
+
+PDF text extraction prepares bill versions for deterministic diffing.
+
+```mermaid
+flowchart TD
+    A["BillVersion rows with pdfUrl"] --> B["extract-bill-version-text job"]
+    B --> C["extractTextFromPdfUrl()"]
+    C --> D["Download PDF with timeout"]
+    D --> E["PDFParse.getText()"]
+    E --> F["Normalize extracted text"]
+    F --> G["Update bill_versions.textContent"]
+```
+
+The extraction job selects bill versions where:
+- `pdfUrl` exists
+- `textContent` is empty
+
+This makes the job safe to rerun.
+
+Extracted text is stored in `bill_versions.textContent` because Day 4 diffing compares one bill version against another.
+
+The original PDF URL is preserved for traceability.
