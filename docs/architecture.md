@@ -589,3 +589,239 @@ GET /api/me/follows
 ```
 
 It returns all bills followed by the authenticated user, including selected bill details needed by the frontend.
+
+## Frontend Architecture
+
+The frontend is a Next.js app inside `apps/web`.
+
+The frontend does not connect to PostgreSQL directly. It communicates with the Express backend through HTTP APIs.
+
+```text
+Next.js frontend
+  -> Express API
+  -> Prisma
+  -> PostgreSQL
+```
+
+### Frontend Folder Responsibilities
+
+#### `apps/web/app`
+
+Next.js App Router routes and layouts.
+
+Current important files:
+- `layout.tsx`: root layout shared by all pages
+- `page.tsx`: bill list homepage at `/`
+- `bills/[id]/page.tsx`: dynamic bill detail page at `/bills/:id`
+- `globals.css`: global styling and shared utility classes
+
+#### `apps/web/components`
+
+Reusable UI components.
+
+Current components:
+- `bill-card.tsx`: displays one bill in the bill list
+- `bill-timeline.tsx`: renders visual stage timeline for a bill
+- `auth-panel.tsx`: handles login/logout UI and token persistence
+- `follow-bill-panel.tsx`: handles follow/unfollow interaction for one bill
+
+#### `apps/web/lib`
+
+Frontend utilities and API clients.
+
+Current file:
+- `api-client.ts`: centralizes calls from the frontend to the Express API
+
+The API client reads the backend base URL from:
+
+```env
+NEXT_PUBLIC_API_BASE_URL=http://localhost:4000
+```
+
+### Frontend Page Flow
+
+```mermaid
+flowchart TD
+    A["Browser opens /"] --> B["app/page.tsx"]
+    B --> C["getBills()<br/>lib/api-client.ts"]
+    C --> D["GET /api/bills<br/>Express API"]
+    D --> E["Render BillCard list"]
+
+    F["User clicks bill title"] --> G["app/bills/[id]/page.tsx"]
+    G --> H["getBillById(id)<br/>lib/api-client.ts"]
+    H --> I["GET /api/bills/:id<br/>Express API"]
+    I --> J["Render bill details"]
+    J --> K["BillTimeline component"]
+    J --> L["FollowBillPanel component"]
+```
+
+### Server Components And Client Components
+
+The bill list and bill detail pages are primarily server-rendered pages. They fetch bill data from the backend API before rendering.
+
+Interactive UI uses Client Components with `"use client"`.
+
+Client Components are used for:
+- login form state
+- localStorage token storage
+- follow/unfollow button clicks
+- loading and saving states
+
+Examples:
+- `auth-panel.tsx`
+- `follow-bill-panel.tsx`
+
+### Frontend Authentication Flow
+
+```mermaid
+flowchart TD
+    A["User enters email/password"] --> B["AuthPanel"]
+    B --> C["POST /api/auth/login"]
+    C --> D["Receive JWT"]
+    D --> E["Store token in localStorage"]
+    E --> F["Call /api/auth/me on page refresh"]
+    F --> G["Restore signed-in user"]
+```
+
+The frontend stores the JWT in `localStorage` for local development.
+
+Protected API calls include:
+
+```text
+Authorization: Bearer TOKEN_HERE
+```
+
+This is used by:
+- `GET /api/auth/me`
+- `POST /api/bills/:id/follow`
+- `DELETE /api/bills/:id/follow`
+- `GET /api/me/follows`
+
+### Follow UI Flow
+
+```mermaid
+flowchart TD
+    A["Bill detail page"] --> B["FollowBillPanel"]
+    B --> C["Read stored token"]
+    C --> D["GET /api/me/follows"]
+    D --> E["Check whether current bill is followed"]
+    E --> F["Render Follow or Unfollow button"]
+    F --> G["User clicks button"]
+    G --> H["POST or DELETE /api/bills/:id/follow"]
+    H --> I["Update local follow state"]
+```
+
+The follow UI does not trust local state alone. It refreshes follow state from the backend using `/api/me/follows`.
+
+A React re-render loop was fixed by memoizing the auth-change callback with `useCallback`.
+
+## Source Ingestion Architecture
+
+The ingestion system separates source parsing from database storage.
+
+```text
+source website
+  -> source adapter/parser
+  -> NormalizedBillInput
+  -> ingestBill()
+  -> Prisma
+  -> PostgreSQL
+```
+
+This lets the app support multiple sources without rewriting database logic.
+
+### Existing Ingestion Sources
+
+Current sources:
+- manual seed data from `seed-bills.ts`
+- PRS listing data from `fetch-prs-bills.ts`
+- enriched PRS detail data from individual PRS bill pages
+
+### Bill Ingestion Boundary
+
+All bill sources are converted into:
+
+```ts
+NormalizedBillInput
+```
+
+Then saved through:
+
+```ts
+ingestBill()
+```
+
+This keeps the ingestion service source-agnostic.
+
+The ingestion service handles:
+- creating/updating bills
+- creating/updating bill stages
+- creating/updating bill versions
+- preserving raw source metadata
+- avoiding duplicates through Prisma `upsert`
+
+### PRS Listing Ingestion
+
+```mermaid
+flowchart TD
+    A["PRS Bill Track listing page"] --> B["fetchPrsBillList()"]
+    B --> C["Parse bill title/status/source URL"]
+    C --> D["Filter out navigation/category links"]
+    D --> E["Create list items"]
+    E --> F["fetch-prs-bills job"]
+    F --> G["NormalizedBillInput"]
+    G --> H["ingestBill()"]
+```
+
+The listing parser extracts:
+- title
+- status
+- source URL
+- year from title
+
+The parser skips:
+- navigation links
+- category links
+- non-bill links
+- links without a year-like bill slug
+
+### PRS Detail Enrichment
+
+```mermaid
+flowchart TD
+    A["PRS bill detail URL"] --> B["fetchPrsBillDetail()"]
+    B --> C["Extract ministry"]
+    B --> D["Extract timeline stages"]
+    B --> E["Extract PDF/document links"]
+    B --> F["Extract summary text"]
+    C --> G["NormalizedBillInput"]
+    D --> G
+    E --> G
+    F --> G
+    G --> H["ingestBill()"]
+```
+
+Detail enrichment extracts:
+- ministry
+- stage timeline
+- PDF/document links
+- summary text where available
+
+Document links become bill versions with PDF URLs.
+
+Timeline entries become bill stages.
+
+PRS detail data is preserved in `rawSourceData`, but dates are converted to ISO strings first because JSON fields cannot store JavaScript `Date` objects directly.
+
+### Defensive Parsing Decisions
+
+PRS pages are HTML pages, not a formal API. They include navigation links, category links, and content sections alongside bill data.
+
+To avoid bad ingestion, the parser:
+- filters URLs to likely bill detail slugs
+- requires bill-like titles with years
+- skips category/navigation links
+- uses fetch timeout protection
+- stores raw source metadata for debugging
+
+This makes the ingestion process safer while still allowing future parser improvements.
