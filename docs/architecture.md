@@ -849,3 +849,49 @@ This makes the job safe to rerun.
 Extracted text is stored in `bill_versions.textContent` because Day 4 diffing compares one bill version against another.
 
 The original PDF URL is preserved for traceability.
+
+## Deterministic Diff Flow
+
+Diffing compares two extracted bill versions.
+
+```mermaid
+flowchart TD
+    A["Client requests diff"] --> B["GET /api/bills/:id/diff?from=...&to=..."]
+    B --> C["bill-diff controller"]
+    C --> D["bill-diff service"]
+    D --> E["Load both BillVersion rows"]
+    E --> F["Validate same billId"]
+    F --> G["Validate textContent exists"]
+    G --> H["Normalize extracted text"]
+    H --> I["Split into clause-like units"]
+    I --> J["Compare matching units"]
+    J --> K["Word-level diff for modified units"]
+    K --> L["Structured JSON diff response"]
+```
+
+### Why Deterministic Diffing Comes Before AI
+
+The app does not ask an LLM to decide what changed between bill versions.
+
+Instead, the backend first performs deterministic comparison:
+- normalize text
+- split into clause-like units
+- identify added, removed, modified, and unchanged units
+- generate word-level changes for modified units
+
+This makes the comparison reproducible and inspectable.
+
+AI summarization can later consume this structured diff, but the source of truth remains deterministic code.
+
+### Why Not Naive Line Diffing
+
+Legal PDFs often contain:
+- arbitrary line breaks
+- wrapped clauses
+- headers and footers
+- spacing changes
+- page-number artifacts
+
+A naive line diff can report large changes when the legal text barely changed.
+
+Clause-like units are more useful because legal meaning is usually organized around clauses, sections, and numbered provisions.

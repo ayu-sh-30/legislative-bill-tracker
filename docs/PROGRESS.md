@@ -359,3 +359,28 @@ Interview notes:
 - The extraction job only processes versions where `textContent` is empty, making it safe to rerun.
 - Extracted text is stored on `bill_versions` because diffing compares versions, not the bill metadata row.
 - I used the class-based `PDFParse` API and cleaned up parser resources after extraction.
+
+### Checkpoint 4: Deterministic diff foundation
+
+Status: Complete
+
+Built:
+- Bill diff service for comparing two extracted bill versions
+- Clause-like text normalization and splitting
+- Word-level diffing for modified clauses
+- Diff controller and route
+- Diff endpoint at `/api/bills/:id/diff?from=VERSION_ID&to=VERSION_ID`
+- Validation that both versions belong to the requested bill
+- Validation that both versions have extracted text before diffing
+
+Verified:
+- `npm.cmd run build`
+- Diff endpoint returns structured output for two extracted bill versions
+- Diff response includes added, removed, modified, and unchanged counts
+- Diff response includes clause-level before/after text and word-level changes
+
+Interview notes:
+- I kept diffing deterministic rather than relying on an LLM for comparison.
+- Legal text is split into clause-like units because naive line diffing is noisy for PDF-extracted legal documents.
+- Word-level diffing is used only inside modified clause units.
+- This structured diff can be passed to an LLM later for summarization with citations.
