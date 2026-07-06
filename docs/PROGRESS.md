@@ -155,3 +155,28 @@ Interview notes:
 - I used JWTs so clients can authenticate once and send a signed token on later requests.
 - The auth middleware verifies the token and attaches the authenticated user to `req.user`.
 - `/api/auth/me` checks the database so stale tokens do not return deleted user data.
+
+### Checkpoint 4: Protected follow routes
+
+Status: Complete
+
+Built:
+- Protected follow route for bills
+- Protected unfollow route for bills
+- Protected current-user follows route
+- Follow service using Prisma upsert for idempotent follow behavior
+- Auth middleware integration with user-specific actions
+- Safe unfollow behavior using `deleteMany`
+
+Verified:
+- `POST /api/bills/:id/follow` with Bearer token
+- `DELETE /api/bills/:id/follow` with Bearer token
+- `GET /api/me/follows` with Bearer token
+- Protected follow routes reject unauthenticated requests with `401`
+- Re-following the same bill does not create duplicates
+
+Interview notes:
+- I used the `Follow` join table to model a many-to-many relationship between users and bills.
+- Follow actions are protected by JWT auth middleware.
+- The authenticated user ID comes from the verified token, not from client-provided body data.
+- `upsert` makes following idempotent, and `deleteMany` makes unfollowing safe to retry.

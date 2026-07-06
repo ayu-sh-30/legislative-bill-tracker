@@ -7,6 +7,7 @@ import healthRoutes from './routes/health.routes';
 import billRoutes from './routes/bills.routes';
 import mpRoutes from './routes/mp.routes';
 import authRouets from './routes/auth.routes';
+import followRoutes from './routes/follow.routes';
 
 const app = express();
 
@@ -19,6 +20,7 @@ app.use(healthRoutes);
 app.use("/api/bills", billRoutes);
 app.use("/api/mps", mpRoutes);
 app.use("/api/auth", authRouets);
+app.use("/api", followRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
