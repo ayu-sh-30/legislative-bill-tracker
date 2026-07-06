@@ -256,3 +256,31 @@ Interview notes:
 - The detail page fetches one bill by ID using the shared API client.
 - The timeline is separated into a reusable component so it can be reused or tested independently.
 - The frontend still talks only to the Express API and does not access the database directly.
+
+### Checkpoint 4: Login and follow UI
+
+Status: Complete
+
+Built:
+- Client-side login panel using the backend JWT login endpoint
+- Token storage in `localStorage`
+- Auth state restoration using `/api/auth/me`
+- Follow/unfollow panel on the bill detail page
+- Protected follow API calls using the Bearer token
+- Follow state refresh from `/api/me/follows`
+- React callback stability fix using `useCallback` to prevent repeated follow-state checks
+
+Verified:
+- User can log in from the bill detail page
+- JWT token is stored locally after login
+- Refreshing the page restores the logged-in user
+- User can follow a bill
+- User can unfollow a bill
+- Follow state remains stable after refresh
+- `npm.cmd run build` passes
+
+Interview notes:
+- I used Client Components for login and follow interactions because they require browser state and event handlers.
+- The frontend stores the JWT and sends it in the `Authorization: Bearer` header for protected routes.
+- The follow state is loaded from the backend rather than guessed locally.
+- I fixed a React re-render loop by memoizing the auth-change callback with `useCallback`.

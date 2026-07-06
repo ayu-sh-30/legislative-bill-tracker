@@ -1,6 +1,6 @@
-// apps/web/app/page.tsx
 import { BillCard } from "../components/bill-card";
 import { getBills } from "../lib/api-client";
+
 
 export default async function HomePage() {
   const bills = await getBills();

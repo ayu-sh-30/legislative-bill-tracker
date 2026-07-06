@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { notFound } from "next/navigation";
-
+import { FollowBillPanel } from "../../../components/follow-bill-panel";
 import { BillTimeline } from "../../../components/bill-timeline";
 import { getBillById } from "../../../lib/api-client";
 
@@ -99,7 +99,7 @@ export default async function BillDetailPage({ params }: BillDetailPageProps) {
           )}
         </section>
       </div>
-
+      <FollowBillPanel billId={bill.id} />
       <section>
         <div className="section-heading">
           <h2>Status Timeline</h2>
