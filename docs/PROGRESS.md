@@ -309,3 +309,30 @@ Interview notes:
 - PRS data is normalized into the same `NormalizedBillInput` shape used by seed data.
 - The ingestion service remains source-agnostic.
 - Raw PRS source metadata is preserved in `rawSourceData`.
+
+### Checkpoint 2: PRS detail enrichment
+
+Status: Complete
+
+Built:
+- PRS bill detail fetcher
+- Ministry extraction from detail pages
+- Timeline stage extraction from PRS detail text
+- PDF/document link extraction from PRS relevant links
+- Summary text extraction where available
+- JSON-safe raw detail storage
+- Listing parser filters to skip category/navigation links
+- Fetch timeout protection for PRS requests
+
+Verified:
+- PRS fetch job runs locally after enrichment
+- PRS navigation/category links are skipped
+- Real bill detail pages are fetched
+- Enriched bills are ingested through the existing bill ingestion service
+- Bill detail pages show richer metadata, stages, and versions where available
+
+Interview notes:
+- I treated PRS as a source adapter rather than coupling scraper logic to database writes.
+- I preserved raw detail data in JSON after converting dates to strings.
+- I added defensive parsing because PRS pages include navigation and category links alongside bill links.
+- I kept the ingestion service unchanged, proving the normalized ingestion boundary works.
