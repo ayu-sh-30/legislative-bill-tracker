@@ -230,3 +230,29 @@ Interview notes:
 - I used a typed API client so frontend pages do not hardcode fetch logic.
 - The homepage fetches data from the Express API instead of accessing the database directly.
 - I separated the bill card into a reusable component to keep the page clean.
+
+### Checkpoint 3: Bill detail page with timeline
+
+Status: Complete
+
+Built:
+- Dynamic bill detail route at `/bills/:id`
+- Bill detail page fetching data from the backend API
+- Reusable visual timeline component
+- Bill metadata panel for introduced date, year, and source
+- Versions panel for bill text versions
+- Back navigation to the bill list
+- Responsive layout for mobile and desktop
+
+Verified:
+- Homepage bill links open the correct detail page
+- Bill detail page shows title, status, ministry, bill number, and source link
+- Timeline renders bill stages in chronological order
+- Versions section renders available bill versions
+- `npm.cmd run build` passes for the frontend
+
+Interview notes:
+- I used a dynamic Next.js route with `app/bills/[id]/page.tsx`.
+- The detail page fetches one bill by ID using the shared API client.
+- The timeline is separated into a reusable component so it can be reused or tested independently.
+- The frontend still talks only to the Express API and does not access the database directly.
