@@ -180,3 +180,53 @@ Interview notes:
 - Follow actions are protected by JWT auth middleware.
 - The authenticated user ID comes from the verified token, not from client-provided body data.
 - `upsert` makes following idempotent, and `deleteMany` makes unfollowing safe to retry.
+
+## Day 3 - Frontend Browsing and Timeline
+
+### Checkpoint 1: Next.js frontend foundation
+
+Status: Complete
+
+Built:
+- Initialized the Next.js frontend app inside `apps/web`
+- Added frontend package scripts for dev, build, start, and lint
+- Added TypeScript and Next.js configuration files
+- Added environment configuration for backend API base URL
+- Added root layout and global CSS
+- Added a shared frontend API client for bill requests
+- Added TypeScript types for bill list items, bill details, bill stages, and bill versions
+- Added CSS module declaration support for global stylesheet imports
+
+Verified:
+- `npm.cmd install` completed in `apps/web`
+- `npm.cmd run build` passes
+- Frontend app can run locally on `http://localhost:3000`
+- API client points to backend via `NEXT_PUBLIC_API_BASE_URL`
+
+Interview notes:
+- I set up the frontend as a separate Next.js app inside the monorepo.
+- The frontend talks to the Express API, not directly to the database.
+- I centralized backend calls in `lib/api-client.ts` so pages and components do not hardcode fetch logic.
+- I used TypeScript types matching backend responses to make frontend data rendering safer.
+
+### Checkpoint 2: Bill list page
+
+Status: Complete
+
+Built:
+- Next.js homepage showing tracked bills from the backend API
+- Shared API client for bill list and detail requests
+- Reusable bill card component
+- Basic page styling and empty state
+- External source link for each bill
+
+Verified:
+- Frontend runs at `http://localhost:3000`
+- Backend API runs at `http://localhost:4000`
+- Homepage renders seeded bill records
+- Bill cards show title, status, house, date, ministry, and bill number
+
+Interview notes:
+- I used a typed API client so frontend pages do not hardcode fetch logic.
+- The homepage fetches data from the Express API instead of accessing the database directly.
+- I separated the bill card into a reusable component to keep the page clean.
