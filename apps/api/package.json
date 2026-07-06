@@ -12,6 +12,7 @@
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "db:seed:bills": "ts-node-dev --transpile-only src/jobs/seed-bills.ts",
     "db:seed:mps": "ts-node-dev --transpile-only src/jobs/seed-mps.ts",
+    "db:fetch:prs-bills": "ts-node-dev --transpile-only src/jobs/fetch-prs-bills.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -21,6 +22,7 @@
   "dependencies": {
     "@prisma/client": "^6.19.3",
     "bcrypt": "^6.0.0",
+    "cheerio": "^1.2.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
@@ -29,6 +31,7 @@
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
+    "@types/cheerio": "^0.22.35",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",

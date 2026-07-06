@@ -284,3 +284,28 @@ Interview notes:
 - The frontend stores the JWT and sends it in the `Authorization: Bearer` header for protected routes.
 - The follow state is loaded from the backend rather than guessed locally.
 - I fixed a React re-render loop by memoizing the auth-change callback with `useCallback`.
+
+## Day 4 - Version Diffing and AI Summaries
+
+### Checkpoint 1: PRS bill ingestion
+
+Status: Complete
+
+Built:
+- PRS bill source service for fetching the Bill Track page
+- HTML parsing with Cheerio
+- PRS bill fetch job
+- Normalization from PRS list items into the existing bill ingestion format
+- Real PRS bills saved into PostgreSQL through Prisma
+
+Verified:
+- PRS fetch job runs locally
+- Real PRS bill records are inserted or updated in the database
+- Frontend bill list shows more than the manually seeded bills
+- Existing ingestion service works for both manual seed data and PRS data
+
+Interview notes:
+- I separated source parsing from database ingestion.
+- PRS data is normalized into the same `NormalizedBillInput` shape used by seed data.
+- The ingestion service remains source-agnostic.
+- Raw PRS source metadata is preserved in `rawSourceData`.
