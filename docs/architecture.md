@@ -895,3 +895,102 @@ Legal PDFs often contain:
 A naive line diff can report large changes when the legal text barely changed.
 
 Clause-like units are more useful because legal meaning is usually organized around clauses, sections, and numbered provisions.
+
+## AI Diff Summary Flow
+
+AI summarization runs after deterministic diffing.
+
+```mermaid
+flowchart TD
+    A["Client requests AI summary"] --> B["POST /api/bills/:id/diff-summary"]
+    B --> C["diff-summary controller"]
+    C --> D["Validate fromVersionId and toVersionId"]
+    D --> E["diff-summary service"]
+    E --> F["Run deterministic diff service"]
+    F --> G["Load both BillVersion rows"]
+    G --> H["Validate same billId and textContent exists"]
+    H --> I["Generate structured deterministic diff"]
+    I --> J["Compact changed clauses for prompt"]
+    J --> K["Build constrained summarization prompt"]
+    K --> L["AI provider client"]
+    L --> M["OpenAI Responses API or Gemini OpenAI-compatible API"]
+    M --> N["Parse model JSON response"]
+    N --> O["Return AI summary + deterministic metadata"]
+
+    M --> P["Provider error, quota issue, invalid JSON, or timeout"]
+    P --> Q["Return fallback summary"]
+    Q --> R["Include deterministic summary counts and limitations"]
+```
+
+The AI layer does not decide what changed. It receives structured deterministic diff data and explains it in plain English.
+
+The source of truth remains:
+
+```text
+deterministic diff service
+```
+
+The model receives a compact JSON payload containing:
+- source bill ID
+- from-version metadata
+- to-version metadata
+- deterministic added/removed/modified/unchanged counts
+- changed clause-like units
+- before/after text snippets for changed units
+
+The prompt instructs the model to:
+- use only the provided diff JSON
+- avoid invented legal effects, motives, or implications
+- mention uncertainty when the diff text is incomplete
+- cite clause headings exactly from the deterministic diff
+- return valid JSON only
+
+The expected model output shape is:
+
+```json
+{
+  "summary": "Plain-English summary in 4-8 sentences.",
+  "keyChanges": [
+    {
+      "clause": "Clause or heading from diff",
+      "changeType": "added | removed | modified",
+      "explanation": "Plain-English explanation based only on before/after text."
+    }
+  ],
+  "limitations": ["Any important limitations or missing context."]
+}
+```
+
+The API response also includes deterministic metadata:
+
+```json
+{
+  "deterministicSummary": {
+    "added": 0,
+    "removed": 0,
+    "modified": 0,
+    "unchanged": 0
+  },
+  "fromVersion": {
+    "id": "...",
+    "label": "...",
+    "pdfUrl": "..."
+  },
+  "toVersion": {
+    "id": "...",
+    "label": "...",
+    "pdfUrl": "..."
+  },
+  "usedAi": true,
+  "aiProvider": "gemini",
+  "aiModel": "..."
+}
+```
+
+If the AI provider fails, times out, returns invalid JSON, or has quota issues, the endpoint still returns:
+- deterministic diff summary counts
+- version metadata
+- a fallback explanation
+- limitations explaining why AI output was unavailable
+
+This keeps the core diff feature usable even when the AI provider is unavailable.

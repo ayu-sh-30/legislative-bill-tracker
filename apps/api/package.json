@@ -29,6 +29,8 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
+    "opena": "^0.1.19",
+    "openai": "^6.45.0",
     "pdf-parse": "^2.4.5",
     "zod": "^4.4.3"
   },

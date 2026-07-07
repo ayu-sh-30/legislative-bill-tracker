@@ -9,6 +9,7 @@ import mpRoutes from './routes/mp.routes';
 import authRouets from './routes/auth.routes';
 import followRoutes from './routes/follow.routes';
 import billDiffRoutes from "./routes/bill-diff.routes";
+import diffSummaryRoutes from "./routes/diff-summary.routes";
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.use("/api/auth", authRouets);
 app.use("/api", followRoutes);
 app.use("/api/bills", billRoutes);
 app.use("/api/bills", billDiffRoutes);
+app.use("/api/bills", diffSummaryRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

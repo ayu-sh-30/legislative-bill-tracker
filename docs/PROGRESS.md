@@ -384,3 +384,29 @@ Interview notes:
 - Legal text is split into clause-like units because naive line diffing is noisy for PDF-extracted legal documents.
 - Word-level diffing is used only inside modified clause units.
 - This structured diff can be passed to an LLM later for summarization with citations.
+
+### Checkpoint 5: AI diff summarization
+
+Status: Complete
+
+Built:
+- AI summary endpoint for deterministic bill version diffs
+- Provider-aware AI client supporting OpenAI and Gemini-compatible APIs
+- Gemini test integration using OpenAI-compatible SDK configuration
+- Prompt that restricts the model to deterministic diff JSON
+- JSON parsing and fallback handling for model responses
+- Timeout protection for AI requests
+- Fallback response when AI provider fails or quota is unavailable
+
+Verified:
+- `npm.cmd run build`
+- `POST /api/bills/:id/diff-summary`
+- Endpoint returns deterministic diff metadata
+- Endpoint returns AI-generated summary when provider is available
+- Endpoint falls back safely when provider request fails
+
+Interview notes:
+- I kept deterministic diffing as the source of truth.
+- The LLM only summarizes structured diff output, instead of comparing documents directly.
+- The prompt requires clause-level references from the provided diff.
+- The endpoint has fallback behavior so the app remains usable even if the AI provider fails.
