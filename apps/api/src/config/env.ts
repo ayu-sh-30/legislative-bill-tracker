@@ -15,7 +15,7 @@ const envSchema = z.object({
   OPENAI_MODEL: z.string().default("gpt-5.5"),
 
   GEMINI_API_KEY: z.string().optional(),
-  GEMINI_MODEL: z.string().default("gemini-3.5-flash"),
+  GEMINI_MODEL: z.string().default("gemini-3.1-flash-lite"),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

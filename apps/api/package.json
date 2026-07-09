@@ -14,6 +14,8 @@
     "db:seed:mps": "ts-node-dev --transpile-only src/jobs/seed-mps.ts",
     "db:fetch:prs-bills": "ts-node-dev --transpile-only src/jobs/fetch-prs-bills.ts",
     "db:extract:pdf-text": "ts-node-dev --transpile-only src/jobs/extract-bill-version-text.ts",
+    "db:seed:demo-diff": "ts-node-dev --transpile-only src/jobs/seed-demo-diff-bill.ts",
+    "db:simulate:stage-change": "ts-node-dev --transpile-only src/jobs/simulate-stage-change.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

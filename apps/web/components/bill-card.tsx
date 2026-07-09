@@ -1,4 +1,4 @@
-
+// apps/web/components/bill-card.tsx
 import Link from "next/link";
 import { CalendarDays, ExternalLink, Landmark } from "lucide-react";
 
@@ -44,7 +44,7 @@ export function BillCard({ bill }: BillCardProps) {
 
         <p className="bill-card__summary">
           {bill.ministry ?? "Ministry not available"}
-          {bill.billNumber ? ` • Bill ${bill.billNumber}` : ""}
+          {bill.billNumber ? ` - Bill ${bill.billNumber}` : ""}
         </p>
       </div>
 

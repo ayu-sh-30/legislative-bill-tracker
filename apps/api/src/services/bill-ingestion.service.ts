@@ -1,4 +1,5 @@
 import { prisma } from "../config/prisma";
+import { createStageNotificationsForFollowers } from "./notification.service";
 
 type JsonPrimitive = string | number | boolean;
 type JsonObject = { [key: string]: JsonValue | null };
@@ -74,28 +75,42 @@ export async function ingestBill(input: NormalizedBillInput) {
 
   if (input.stages?.length) {
     for (const stage of input.stages) {
-      await prisma.billStage.upsert({
+      // apps/api/src/services/bill-ingestion.service.ts
+      const existingStage = await prisma.billStage.findFirst({
         where: {
-          billId_stage_stageDate: {
-            billId: bill.id,
-            stage: stage.stage,
-            stageDate: stage.stageDate ?? new Date(0),
-          },
-        },
-        create: {
           billId: bill.id,
           stage: stage.stage,
-          house: stage.house,
-          stageDate: stage.stageDate,
-          description: stage.description,
-          sourceUrl: stage.sourceUrl,
+          stageDate: stage.stageDate ?? null,
         },
-        update: {
-          house: stage.house,
-          description: stage.description,
-          sourceUrl: stage.sourceUrl,
-        },
+        select: { id: true },
       });
+
+      const savedStage = existingStage
+        ? await prisma.billStage.update({
+            where: { id: existingStage.id },
+            data: {
+              house: stage.house,
+              description: stage.description,
+              sourceUrl: stage.sourceUrl,
+            },
+          })
+        : await prisma.billStage.create({
+            data: {
+              billId: bill.id,
+              stage: stage.stage,
+              house: stage.house,
+              stageDate: stage.stageDate,
+              description: stage.description,
+              sourceUrl: stage.sourceUrl,
+            },
+          });
+
+      if (!existingStage) {
+        await createStageNotificationsForFollowers({
+          billId: bill.id,
+          billStageId: savedStage.id,
+        });
+      }
     }
   }
 

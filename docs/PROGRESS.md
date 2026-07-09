@@ -410,3 +410,78 @@ Interview notes:
 - The LLM only summarizes structured diff output, instead of comparing documents directly.
 - The prompt requires clause-level references from the provided diff.
 - The endpoint has fallback behavior so the app remains usable even if the AI provider fails.
+
+<!-- docs/PROGRESS.md -->
+
+## Day 5 - Notifications, Polish, and Demo Readiness
+
+### Checkpoint 1: Polished frontend experience
+
+Status: Complete
+
+Built:
+- Improved homepage with dashboard-style hero, stats, auth panel, and capability strip
+- Added dark/light theme toggle
+- Added loading states for routes
+- Added AI-ready bill section on the homepage
+- Added AI-ready bill section on the follows page
+- Fixed `/me/follows` route so it renders the followed bills page instead of duplicate homepage content
+
+Interview notes:
+- I improved the UI from a plain data list into a more realistic legislative tracking dashboard.
+- I kept the primary app experience on the first screen instead of building a marketing-only landing page.
+- I exposed AI-ready bills directly so evaluators can find the AI summary workflow without manually searching the database.
+
+### Checkpoint 2: AI-ready discovery and demo data
+
+Status: Complete
+
+Built:
+- Backend endpoint for bills with at least two text-extracted versions
+- Frontend AI-ready comparison cards
+- Demo bill with two text versions for reliable AI summary testing
+- Gemini model configuration updated to `gemini-3.1-flash-lite` for faster local demo responses
+
+Interview notes:
+- Real PRS/Sansad data remains the main data path.
+- Demo data is clearly labelled and exists only to make the portfolio demo reliable.
+- AI summarization is scoped to explaining deterministic diff output, not deciding the diff itself.
+
+### Checkpoint 3: In-app notifications
+
+Status: Complete
+
+Built:
+- `Notification` Prisma model
+- Notification relations to users, bills, and bill stages
+- Notification service for creating alerts when followed bills receive new stages
+- Protected notification endpoints:
+  - `GET /api/me/notifications`
+  - `PATCH /api/me/notifications/:id/read`
+- Notifications page at `/me/notifications`
+- Read/unread UI state
+- Stage-change simulation job for local testing
+
+Interview notes:
+- Notifications are generated from bill stage changes, not from arbitrary frontend state.
+- Notifications are tied to followed bills, so users only receive updates for bills they care about.
+- I implemented in-app notifications first because they are easier to demo and do not require email infrastructure.
+
+### Checkpoint 4: Final local validation
+
+Status: Complete
+
+Verified:
+- Backend build passes
+- Frontend build passes
+- Home page shows AI-ready bills
+- Bill detail page shows AI summary panel
+- Follow/unfollow works
+- `/me/follows` shows followed bills
+- `/me/notifications` shows generated notifications
+- Notifications can be marked as read
+- AI summaries work locally using Gemini
+
+Interview notes:
+- The final app demonstrates ingestion, relational modeling, authentication, user-specific tracking, deterministic diffing, AI summarization, and notifications.
+- The project is structured like a production-style full-stack app, with clear separation between routes, controllers, services, jobs, and frontend components.

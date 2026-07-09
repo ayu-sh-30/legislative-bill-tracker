@@ -1,6 +1,8 @@
+// apps/web/app/bills/[id]/page.tsx
 import Link from "next/link";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { notFound } from "next/navigation";
+import { AiDiffSummaryPanel } from "../../../components/ai-diff-summary-panel";
 import { FollowBillPanel } from "../../../components/follow-bill-panel";
 import { BillTimeline } from "../../../components/bill-timeline";
 import { getBillById } from "../../../lib/api-client";
@@ -10,6 +12,7 @@ type BillDetailPageProps = {
     id: string;
   }>;
 };
+
 function formatDate(value: string | null) {
   if (!value) {
     return "Date not available";
@@ -45,7 +48,7 @@ export default async function BillDetailPage({ params }: BillDetailPageProps) {
           <h2>{bill.title}</h2>
           <p className="muted">
             {bill.ministry ?? "Ministry not available"}
-            {bill.billNumber ? ` • Bill ${bill.billNumber}` : ""}
+            {bill.billNumber ? ` - Bill ${bill.billNumber}` : ""}
           </p>
         </div>
 
@@ -99,7 +102,9 @@ export default async function BillDetailPage({ params }: BillDetailPageProps) {
           )}
         </section>
       </div>
+      <AiDiffSummaryPanel billId={bill.id} versions={bill.versions} />
       <FollowBillPanel billId={bill.id} />
+
       <section>
         <div className="section-heading">
           <h2>Status Timeline</h2>

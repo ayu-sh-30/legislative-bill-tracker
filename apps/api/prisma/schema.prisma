@@ -8,7 +8,7 @@ datasource db {
 }
 
 model Bill {
-  id             String    @id @default(uuid())
+  id             String         @id @default(uuid())
   title          String
   shortTitle     String?
   billNumber     String?
@@ -20,6 +20,7 @@ model Bill {
   source         String
   sourceUrl      String
   rawSourceData  Json?
+  notifications  Notification[]
 
   versions     BillVersion[]
   stages       BillStage[]
@@ -55,13 +56,14 @@ model BillVersion {
 }
 
 model BillStage {
-  id          String    @id @default(uuid())
-  billId      String
-  stage       String
-  house       String?
-  stageDate   DateTime?
-  description String?
-  sourceUrl   String?
+  id            String         @id @default(uuid())
+  billId        String
+  stage         String
+  house         String?
+  stageDate     DateTime?
+  description   String?
+  sourceUrl     String?
+  notifications Notification[]
 
   bill Bill @relation(fields: [billId], references: [id], onDelete: Cascade)
 
@@ -121,7 +123,8 @@ model User {
   email        String  @unique
   passwordHash String
 
-  follows Follow[]
+  follows       Follow[]
+  notifications Notification[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -139,4 +142,27 @@ model Follow {
 
   @@unique([userId, billId])
   @@index([billId])
+}
+
+model Notification {
+  id          String    @id @default(uuid())
+  userId      String
+  billId      String
+  billStageId String
+  type        String    @default("stage_change")
+  title       String
+  message     String
+  readAt      DateTime?
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bill      Bill      @relation(fields: [billId], references: [id], onDelete: Cascade)
+  billStage BillStage @relation(fields: [billStageId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, billStageId, type])
+  @@index([userId, readAt])
+  @@index([billId])
+  @@index([createdAt])
 }

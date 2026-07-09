@@ -168,3 +168,101 @@ export function unfollowBill(id: string, token: string) {
     },
   });
 }
+
+export type DiffSummaryKeyChange = {
+  clause: string;
+  changeType: "added" | "removed" | "modified" | string;
+  explanation: string;
+};
+
+export type DiffSummaryResponse = {
+  diffSummary: {
+    summary: string;
+    keyChanges: DiffSummaryKeyChange[];
+    limitations: string[];
+  };
+  deterministicSummary: {
+    added: number;
+    removed: number;
+    modified: number;
+    unchanged: number;
+  };
+  fromVersion: {
+    id: string;
+    label: string;
+    pdfUrl: string | null;
+  };
+  toVersion: {
+    id: string;
+    label: string;
+    pdfUrl: string | null;
+  };
+  usedAi: boolean;
+  aiProvider?: string;
+  aiModel?: string;
+};
+
+export function summarizeBillDiff(
+  billId: string,
+  input: {
+    fromVersionId: string;
+    toVersionId: string;
+  }
+) {
+  return apiRequest<DiffSummaryResponse>(`/api/bills/${billId}/diff-summary`, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+// apps/web/lib/api-client.ts
+export type AiReadyBill = BillListItem & {
+  aiReadyVersionCount: number;
+  aiReadyVersions: Array<{
+    id: string;
+    billId: string;
+    versionLabel: string;
+    versionDate: string | null;
+    pdfUrl: string | null;
+    createdAt: string;
+    updatedAt: string;
+  }>;
+};
+
+
+export type NotificationRecord = {
+  id: string;
+  userId: string;
+  billId: string;
+  billStageId: string;
+  type: string;
+  title: string;
+  message: string;
+  readAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  bill: BillListItem;
+  billStage: BillStage;
+};
+
+export function getMyNotifications(token: string) {
+  return apiRequest<NotificationRecord[]>("/api/me/notifications", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
+
+export function markNotificationRead(id: string, token: string) {
+  return apiRequest<NotificationRecord>(`/api/me/notifications/${id}/read`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
+
+export function getAiReadyBills() {
+  return apiGet<AiReadyBill[]>("/api/ai-ready-bills");
+}
+
